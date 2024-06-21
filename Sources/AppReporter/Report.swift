@@ -45,9 +45,9 @@ struct Report {
     guard fileManager.fileExists(atPath: arguments.privateKey) else {
       throw Errors.privateKeyNotFound
     }
-    let privateKey = try String(contentsOfFile: arguments.privateKey.replacingOccurrences(of: "\r", with: "\n"))
+    let privateKey = try String(contentsOfFile: arguments.privateKey)
     let configuration = APIConfiguration(
-      issuerID: arguments.issuerID, keyID: arguments.keyID, privateKey: privateKey)
+      issuerID: arguments.issuerID, keyID: arguments.keyID, privateKey: privateKey.replacingOccurrences(of: "\r", with: "\n"))
 
     let appClient = AppClient()
     let app = try await appClient.fetch(arguments.appID, configuration: configuration)
