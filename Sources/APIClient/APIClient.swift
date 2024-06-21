@@ -5,10 +5,10 @@
 
 import Foundation
 
-//#if DEBUG
-//  import OSLog
-//  let logger = Logger(subsystem: "AppReporter", category: #file)
-//#endif
+#if DEBUG
+  import OSLog
+  let logger = Logger(subsystem: "AppReporter", category: "APIClient")
+#endif
 
 public enum APIHTTPMethod: String, Sendable {
   case get = "GET"
@@ -52,11 +52,11 @@ extension APIRequest {
       urlRequest.httpBody = try? JSONEncoder().encode(body)
     }
     urlRequest.timeoutInterval = 30
-    //    #if DEBUG
-    //      logger.info(
-    //        "customRequest URL: \(String(describing: urlRequest.url)) HEADER: \(String(describing: urlRequest.allHTTPHeaderFields)) BODY: \(String(describing: body))"
-    //      )
-    //    #endif
+    #if DEBUG
+      logger.info(
+        "customRequest URL: \(String(describing: urlRequest.url)) HEADER: \(String(describing: urlRequest.allHTTPHeaderFields)) BODY: \(String(describing: body))"
+      )
+    #endif
     return urlRequest
   }
 }
@@ -115,13 +115,13 @@ public struct APIClient: Sendable {
     let configuration = URLSessionConfiguration.default
     let session = URLSession(configuration: configuration)
     let (data, response) = try await session.data(for: try request.makeRequest(apiConfiguration))
-    //    #if DEBUG
-    //    if let string = String(data: data, encoding: .utf8) {
-    //      logger.info("APIClient.response \(string, privacy: .sensitive)")
-    //    } else {
-    //      logger.info("APIClient.response data \(data)")
-    //    }
-    //    #endif
+    #if DEBUG
+      if let string = String(data: data, encoding: .utf8) {
+        logger.info("APIClient.response \(string, privacy: .sensitive)")
+      } else {
+        logger.info("APIClient.response data \(data)")
+      }
+    #endif
     switch (response as! HTTPURLResponse).statusCode {
     case 200..<300:
       return data

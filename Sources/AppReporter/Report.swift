@@ -2,6 +2,7 @@ import APIClient
 import ArgumentParser
 import Compression
 import Foundation
+import SlackClient
 
 struct Arguments: ParsableCommand {
   @Argument(help: "Key ID")
@@ -27,6 +28,9 @@ struct Arguments: ParsableCommand {
 
   @Option(name: .shortAndLong, help: "Locale(ex. ja_JP)")
   var locale: String?
+
+  @Option(name: .shortAndLong, help: "Slack Webhook URL")
+  var slackWebhookURL: String?
 }
 
 @main
@@ -77,7 +81,7 @@ struct Report {
       exit(1)
     }
 
-    report += "Number of Installs: \(numberOfInstalls)\n"
+    report += "*Number of Installs:* \(numberOfInstalls)\n"
 
     // カスタマーレビュー
     let customerReviewClient = CustomerReviewClient(configuration: configuration)
@@ -103,7 +107,7 @@ struct Report {
       startOfDay <= $0.attributes.createdDate && $0.attributes.createdDate < endOfDay
     }
     if customerReviews.isEmpty {
-      report += "No customer reviews"
+      report += "*No customer reviews*"
     } else {
       let dateFormatStyle = Date.FormatStyle()
         .year()
@@ -113,16 +117,25 @@ struct Report {
         .minute()
         .locale(locale)
 
-      report += "Customer reviews\n"
+      report += "*Customer reviews*\n"
       report += "=====================================\n"
       customerReviews.forEach {
-        report += "title: \($0.attributes.title ?? "")\n"
-        report += "body: \($0.attributes.body ?? "")\n"
-        report += "nickname: \($0.attributes.reviewerNickname ?? "")\n"
-        report += "date \($0.attributes.createdDate.formatted(dateFormatStyle))\n"
+        report += "*title:* \($0.attributes.title ?? "")\n"
+        report += "*body:* \($0.attributes.body ?? "")\n"
+        report += "*nickname:* \($0.attributes.reviewerNickname ?? "")\n"
+        report += "*date* \($0.attributes.createdDate.formatted(dateFormatStyle))\n"
         report += "=====================================\n"
       }
     }
-    print(report)
+
+    guard let url = arguments.slackWebhookURL.flatMap(URL.init(string:)) else {
+      print(report)
+      return
+    }
+
+    let slackClient = SlackClient()
+    try await slackClient.post(url, text: report)
+    print("Done!")
+    exit(0)
   }
 }

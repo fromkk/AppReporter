@@ -9,6 +9,7 @@ let package = Package(
     products: [
       .executable(name: "AppReporter", targets: ["AppReporter"]),
       .library(name: "APIClient", targets: ["APIClient"]),
+      .library(name: "SlackClient", targets: ["SlackClient"]),
     ],
     dependencies: [
       .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.4.0"),
@@ -21,12 +22,16 @@ let package = Package(
           name: "AppReporter",
           dependencies: [
             "APIClient",
+            "SlackClient",
             .product(name: "ArgumentParser", package: "swift-argument-parser"),
           ]
         ),
         .target(
           name: "APIClient",
           dependencies: []
+        ),
+        .target(
+          name: "SlackClient"
         )
     ]
 )
