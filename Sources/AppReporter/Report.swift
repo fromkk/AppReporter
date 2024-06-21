@@ -4,6 +4,11 @@ import Compression
 import Foundation
 import SlackClient
 
+#if DEBUG
+  import OSLog
+  private let logger = Logger(subsystem: "AppReporter", category: "Report")
+#endif
+
 struct Arguments: ParsableCommand {
   @Argument(help: "Key ID")
   var keyID: String
@@ -41,13 +46,22 @@ struct Report {
 
   static func main() async throws {
     let arguments = Arguments.parseOrExit()
+    #if DEBUG
+      logger.info("\(String(describing: arguments))")
+    #endif
     let fileManager = FileManager.default
     guard fileManager.fileExists(atPath: arguments.privateKey) else {
       throw Errors.privateKeyNotFound
     }
     let privateKey = try String(contentsOfFile: arguments.privateKey)
+    #if DEBUG
+      logger.info("\(privateKey)")
+    #endif
     let configuration = APIConfiguration(
-      issuerID: arguments.issuerID, keyID: arguments.keyID, privateKey: privateKey.replacingOccurrences(of: "\r", with: "\n"))
+      issuerID: arguments.issuerID, keyID: arguments.keyID, privateKey: privateKey)
+    #if DEBUG
+      logger.info("\(String(describing: configuration))")
+    #endif
 
     let appClient = AppClient()
     let app = try await appClient.fetch(arguments.appID, configuration: configuration)
