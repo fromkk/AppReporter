@@ -38,3 +38,11 @@ OPTIONS:
                           Slack Webhook URL
   -h, --help              Show help information.
 ```
+
+### Example
+
+```
+2024-06-21 # Type Report :memo:
+:tada: Number of Installs: 11
+No customer reviews :cry:
+```
