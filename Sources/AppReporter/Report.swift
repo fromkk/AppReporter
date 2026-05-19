@@ -93,7 +93,14 @@ struct Report {
 
         let tsvParser = TSVParser()
         let rows = tsvParser.parse(tsv)
-        numberOfInstalls = rows.filter({ $0["Apple Identifier"] == arguments.appID }).count
+        numberOfInstalls = rows
+          .filter({ $0["Apple Identifier"] == arguments.appID })
+          .filter({
+            let prodType = $0["Product Type Identifier"] ?? ""
+            return prodType == "1F" || prodType == "1"
+          })
+          .compactMap({ Int($0["Units"] ?? "0") })
+          .reduce(0, +)
       } catch {
         print("catch error \(error.localizedDescription)")
         exit(1)
